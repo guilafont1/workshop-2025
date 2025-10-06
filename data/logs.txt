@@ -1,0 +1,6 @@
+[ALERTE] Serveur principal verrouillé.
+Indice 1: Le mot de passe est un hommage à une pionnière des soins infirmiers.
+Indice 2: Encodé en base64 avant d'être haché.
+Indice 3: SHA-256 attendu: sera comparé côté serveur.
+
+Astuce: Pensez à Florence et à l'année de standardisation des statistiques infirmières.

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Virus.Life</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-grid">
+      <div class="brand">
+        <h1>🧬 Virus.Life</h1>
+        <div class="subtitle">Escape game - sécurité & médecine</div>
+      </div>
+      <nav class="main-nav">
+        <a href="{{ url_for('index') }}">Accueil</a>
+        <a href="{{ url_for('lobby') }}">Lobby</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <aside class="sidebar">
+      <div class="card small">
+        <strong>Équipe</strong>
+        <div class="muted">{{ state.team_name or '—' }}</div>
+      </div>
+      <div class="card small">
+        <strong>Progression</strong>
+        <ul class="progress-list"²>
+          {% for r, done in state.progress.items() %}
+            <li class="progress-item {% if done %}done{% else %}locked{% endif %}">
+              {{ r.replace('room','Salle ') }} — {% if done %}✓ Terminé{% else %}🔒 Verrouillé{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="card small">
+        <strong>Temps restant</strong>
+        <div id="time-left-display" data-seconds="{{ state.time_left_seconds or '' }}">
+          <div class="muted" id="time-left-text">{{ state.time_left_str or '—' }}</div>
+        </div>
+        <div id="time-up-msg" class="msg {% if not state.time_up %}hidden{% endif %}" style="margin-top:8px">Temps écoulé : la partie est terminée.</div>
+      </div>
+    </aside>
+
+    <section class="content">
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>&copy; Workshop EPSI/WIS — Python uniquement</small>
+    </div>
+  </footer>
+  <script>
+    // Live countdown: reads initial seconds from #time-left-display[data-seconds]
+    (function(){
+      function qs(id){return document.getElementById(id)}
+      var el = qs('time-left-display');
+      if(!el) return;
+      var sec = parseInt(el.getAttribute('data-seconds')||'0');
+      var text = qs('time-left-text');
+      var upmsg = qs('time-up-msg');
+      function fmt(s){
+        var m = Math.floor(s/60);
+        var ss = s%60;
+        return m + ':' + (ss<10? '0'+ss : ss);
+      }
+      if(isNaN(sec) || sec<=0){
+        if(upmsg) upmsg.classList.remove('hidden');
+        if(text) text.textContent = '0:00';
+        return;
+      }
+      text.textContent = fmt(sec);
+      var iv = setInterval(function(){
+        sec--;
+        if(sec<=0){
+          if(text) text.textContent = '0:00';
+          if(upmsg) upmsg.classList.remove('hidden');
+          clearInterval(iv);
+          // redirect to /fail to ensure server-side handling
+          try{ window.location = '{{ url_for("fail") }}'; }catch(e){window.location = '/fail';}
+          return;
+        }
+        if(text) text.textContent = fmt(sec);
+      },1000);
+    })();
+  </script>
+</body>
+</html>

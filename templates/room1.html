@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Salle 1 — Authentification</h2>
+  <pre>{{ logs }}</pre>
+  <p>Entrez le mot de passe originel (en clair, pas le hash) :</p>
+  <div class="muted" style="margin-top:8px">Astuce: Cherchez dans le bloc de logs une ligne encodée en base64 et un SHA-256 — il y a une piste claire.</div>
+  {% if message %}
+    <div class="msg">{{ message }}</div>
+  {% endif %}
+  <form method="post">
+    <input type="text" name="password" placeholder="Mot de passe" required>
+    <button type="submit">Valider</button>
+  </form>
+</div>
+{% endblock %}

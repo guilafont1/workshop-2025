@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Salle 2 — Base médicale corrompue</h2>
+  <pre>{{ corrupted }}</pre>
+  <p>Corrigez les données selon les indices (fièvre modérée; rythme normal au repos):</p>
+  <div class="muted" style="margin-top:8px">Astuce: Concentrez-vous sur les nombres — l'énoncé indique une combinaison cible précise. Utilisez l'interface ci-dessus pour saisir l'âge, la température et le BPM.</div>
+  {% if message %}
+    <div class="msg">{{ message }}</div>
+  {% endif %}
+  <form method="post">
+    <label>Âge</label>
+    <input type="number" name="age" min="1" max="119" required>
+    <label>Température (°C)</label>
+    <input type="number" name="temperature" step="0.1" min="34" max="41" required>
+    <label>BPM</label>
+    <input type="number" name="bpm" min="40" max="180" required>
+    <button type="submit">Valider</button>
+  </form>
+</div>
+{% endblock %}

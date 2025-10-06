@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Salle 3 — Analyse du virus</h2>
+  <p>Le code malveillant contient des fragments de clé. Recomposez la clé (K1+K2+K3+K4) sans séparateur, puis déchiffrez le message.</p>
+  <pre>{{ virus_code }}</pre>
+  <div class="muted" style="margin-top:8px">Astuce: Les fragments K1..K4 sont visibles dans le code ci-dessus — copiez-les dans l'ordre exact et collez la chaîne complète ici.</div>
+  {% if message %}
+    <div class="msg">{{ message }}</div>
+  {% endif %}
+  {% if secret %}
+    <pre class="ok">{{ secret }}</pre>
+  {% endif %}
+  <form method="post">
+    <label>Clé recomposée</label>
+    <input type="text" name="key" required>
+    <button type="submit">Déchiffrer</button>
+  </form>
+</div>
+{% endblock %}

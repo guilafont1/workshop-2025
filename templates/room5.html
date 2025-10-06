@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Salle 5 — Redémarrage final (3 min)</h2>
+  <p>Vous avez 3 minutes pour répondre.</p>
+  <div class="muted" style="margin-top:8px">Astuce: Lisez chaque question calmement et choisissez la meilleure réponse — pas besoin de connaissances profondes, juste logique et attention. Le minuteur global de 35 minutes inclus cette étape.</div>
+  {% if message %}
+    <div class="msg">{{ message }}</div>
+  {% endif %}
+  <form method="post">
+    {% for q, options, expected in questions %}
+      <fieldset>
+        <legend>{{ q }}</legend>
+        {% for opt in options %}
+          <label><input type="radio" name="q{{ loop.index0 }}" value="{{ opt }}" required> {{ opt }}</label><br>
+        {% endfor %}
+      </fieldset>
+    {% endfor %}
+    <button type="submit">Valider</button>
+  </form>
+</div>
+{% endblock %}

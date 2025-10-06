@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Hôpital sous attaque</h2>
+  <p>Une cyberattaque paralyse les systèmes médicaux. Formez votre équipe et stoppez l'épidémie numérique.</p>
+  <form method="post" action="{{ url_for('start') }}">
+    <label>Nom d'équipe</label>
+    <input type="text" name="team_name" required>
+    <button type="submit">Démarrer</button>
+  </form>
+</div>
+{% endblock %}

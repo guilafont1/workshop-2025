@@ -1,0 +1,13 @@
+{
+  "team_name": "1",
+  "started_at": 1759742457,
+  "progress": {
+    "room1": false,
+    "room2": false,
+    "room3": false,
+    "room4": false,
+    "room5": false
+  },
+  "room5_start": null,
+  "roles": {}
+}

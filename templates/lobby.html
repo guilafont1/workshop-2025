@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Lobby</h2>
+  <p><strong>Équipe :</strong> {{ state.team_name or "—" }}</p>
+  <p><strong>Progression :</strong> {{ state.progress }}</p>
+  <div style="margin-top:12px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.03)">
+    <h3>Comment jouer</h3>
+    <ol>
+      <li>Lisez l'indice, chaque salle a un indice clair.</li>
+      <li>Une fois une salle réussie, la suivante se débloque.</li>
+      <li>Vous avez 35 minutes au total — travaillez ensemble et prenez votre temps.</li>
+    </ol>
+    <form method="post" action="{{ url_for('reset') }}" style="margin-top:8px">
+      <button type="submit">Réinitialiser la partie</button>
+    </form>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+    {# Room 1 always unlocked after start #}
+    <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room1') }}">Salle 1 — Authentification</a>
+
+    {# Room 2: unlocked only after room1 is complete #}
+    {% if state.progress.room1 %}
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room2') }}">Salle 2 — Base médicale</a>
+    {% else %}
+      <div class="card disabled">Salle 2 — Verrouillée (finissez Salle 1)</div>
+    {% endif %}
+
+    {# Room 3: unlocked only after room2 is complete #}
+    {% if state.progress.room2 %}
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room3') }}">Salle 3 — Analyse du virus</a>
+    {% else %}
+      <div class="card disabled">Salle 3 — Verrouillée (finissez Salle 2)</div>
+    {% endif %}
+
+    {# Room 4: unlocked only after room3 is complete #}
+    {% if state.progress.room3 %}
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room4') }}">Salle 4 — Console réseau</a>
+    {% else %}
+      <div class="card disabled">Salle 4 — Verrouillée (finissez Salle 3)</div>
+    {% endif %}
+
+    {# Room 5: unlocked only after room4 is complete #}
+    {% if state.progress.room4 %}
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room5') }}">Salle 5 — Redémarrage</a>
+    {% else %}
+      <div class="card disabled">Salle 5 — Verrouillée (finissez Salle 4)</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

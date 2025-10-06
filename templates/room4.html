@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Salle 4 — Console réseau</h2>
+  <p>Activez les ports dans le bon ordre (indice: HTTPS → SSH → HTTP).</p>
+  <div class="muted" style="margin-top:8px">Astuce: Chaque service a un port bien connu — HTTPS = 443, SSH = 22, HTTP = 80. Entrez la séquence séparée par des virgules.</div>
+  {% if message %}
+    <div class="msg">{{ message }}</div>
+  {% endif %}
+  <form method="post">
+    <label>Séquence (ex: 443,22,80)</label>
+    <input type="text" name="seq" placeholder="443,22,80" required>
+    <button type="submit">Synchroniser</button>
+  </form>
+</div>
+{% endblock %}
