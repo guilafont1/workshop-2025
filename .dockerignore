@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+env/
+venv/
+build/
+dist/
+.venv/
+.git/
+.gitignore
+data/secret_message.fernet
