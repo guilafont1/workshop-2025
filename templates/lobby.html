@@ -17,34 +17,41 @@
   </div>
   <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
     {# Room 1 always unlocked after start #}
-    <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room1') }}">Salle 1 — Authentification</a>
+    <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room1') }}">🫀 Salle 1 — Diagnostic cardiaque</a>
 
     {# Room 2: unlocked only after room1 is complete #}
     {% if state.progress.room1 %}
-      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room2') }}">Salle 2 — Base médicale</a>
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room2') }}">💊 Salle 2 — Prescriptions médicales</a>
     {% else %}
-      <div class="card disabled">Salle 2 — Verrouillée (finissez Salle 1)</div>
+      <div class="card disabled">💊 Salle 2 — Verrouillée (finissez Salle 1)</div>
     {% endif %}
 
     {# Room 3: unlocked only after room2 is complete #}
     {% if state.progress.room2 %}
-      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room3') }}">Salle 3 — Analyse du virus</a>
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room3') }}">🌡️ Salle 3 — Hydratation et température</a>
     {% else %}
-      <div class="card disabled">Salle 3 — Verrouillée (finissez Salle 2)</div>
+      <div class="card disabled">🌡️ Salle 3 — Verrouillée (finissez Salle 2)</div>
     {% endif %}
 
     {# Room 4: unlocked only after room3 is complete #}
     {% if state.progress.room3 %}
-      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room4') }}">Salle 4 — Console réseau</a>
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room4') }}">🧬 Salle 4 — Analyse génétique virale</a>
     {% else %}
-      <div class="card disabled">Salle 4 — Verrouillée (finissez Salle 3)</div>
+      <div class="card disabled">🧬 Salle 4 — Verrouillée (finissez Salle 3)</div>
     {% endif %}
 
     {# Room 5: unlocked only after room4 is complete #}
     {% if state.progress.room4 %}
-      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room5') }}">Salle 5 — Redémarrage</a>
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room5') }}">🦠 Salle 5 — Laboratoire de confinement</a>
     {% else %}
-      <div class="card disabled">Salle 5 — Verrouillée (finissez Salle 4)</div>
+      <div class="card disabled">🦠 Salle 5 — Verrouillée (finissez Salle 4)</div>
+    {% endif %}
+
+    {# Room 6: unlocked only after room5 is complete #}
+    {% if state.progress.room5 %}
+      <a class="card" style="display:block;text-decoration:none;color:inherit" href="{{ url_for('room6') }}">🏥 Salle 6 — Patient zéro critique</a>
+    {% else %}
+      <div class="card disabled">🏥 Salle 6 — Verrouillée (finissez Salle 5)</div>
     {% endif %}
   </div>
 </div>

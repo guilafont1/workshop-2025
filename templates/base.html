@@ -16,6 +16,7 @@
       <nav class="main-nav">
         <a href="{{ url_for('index') }}">Accueil</a>
         <a href="{{ url_for('lobby') }}">Lobby</a>
+        <button onclick="showInstructions()" style="background:none;border:1px solid var(--accent-2);color:var(--accent-2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:14px;">Instructions</button>
       </nav>
     </div>
   </header>
@@ -50,12 +51,62 @@
     </section>
   </main>
 
+  <!-- Instructions Popup -->
+  <div id="instructions-popup" class="popup-overlay" style="display:none;">
+    <div class="popup">
+      <div class="popup-header">
+        <h3 class="popup-title">🏥 Instructions médicales d'urgence</h3>
+        <button class="popup-close" onclick="hideInstructions()">✕</button>
+      </div>
+      <div class="popup-content">
+        <p><strong>Contexte :</strong> Vous êtes une équipe médicale dans un hôpital en quarantaine suite à une épidémie virale. Vous devez résoudre les défis pour sauver les patients et contenir la propagation.</p>
+        
+        <p><strong>Objectif :</strong> Progresser à travers les 6 salles en résolvant les énigmes médicales complexes dans le temps imparti.</p>
+        
+        <div class="equipment-grid" style="margin: 16px 0;">
+          <div class="equipment-item">
+            <strong>🫀 Diagnostic</strong>
+            <br><small>Analysez les données vitales</small>
+          </div>
+          <div class="equipment-item">
+            <strong>🧬 Génétique</strong>
+            <br><small>Décryptez les séquences</small>
+          </div>
+          <div class="equipment-item">
+            <strong>🦠 Confinement</strong>
+            <br><small>Sécurisez le laboratoire</small>
+          </div>
+        </div>
+
+        <p><strong>Conseils :</strong></p>
+        <ul style="margin-left: 20px;">
+          <li>Lisez attentivement tous les indices</li>
+          <li>Les réponses sont souvent cachées dans les détails</li>
+          <li>Travaillez en équipe pour analyser les données</li>
+          <li>Attention au temps - l'épidémie progresse !</li>
+        </ul>
+      </div>
+      <div class="popup-buttons">
+        <button class="popup-btn primary" onclick="hideInstructions()">Commencer la mission</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="container">
-      <small>&copy; Workshop EPSI/WIS — Python uniquement</small>
+      <small>&copy; Workshop EPSI/WIS — Escape Game Médical</small>
     </div>
   </footer>
   <script>
+    // Instructions popup functions
+    function showInstructions() {
+      document.getElementById('instructions-popup').style.display = 'flex';
+    }
+    
+    function hideInstructions() {
+      document.getElementById('instructions-popup').style.display = 'none';
+    }
+
     // Live countdown: reads initial seconds from #time-left-display[data-seconds]
     (function(){
       function qs(id){return document.getElementById(id)}
@@ -86,6 +137,15 @@
           return;
         }
         if(text) text.textContent = fmt(sec);
+        
+        // Add urgency effects when time is low
+        if(sec <= 60 && text) {
+          text.style.color = '#ff4757';
+          text.style.fontWeight = 'bold';
+          if(sec <= 30) {
+            text.style.animation = 'pulse 1s infinite';
+          }
+        }
       },1000);
     })();
   </script>

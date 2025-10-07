@@ -1,22 +1,673 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="card">
-  <h2>Salle 5 — Redémarrage final (3 min)</h2>
-  <p>Vous avez 3 minutes pour répondre.</p>
-  <div class="muted" style="margin-top:8px">Astuce: Lisez chaque question calmement et choisissez la meilleure réponse — pas besoin de connaissances profondes, juste logique et attention. Le minuteur global de 35 minutes inclus cette étape.</div>
+<div class="card containment-card">
+  <div class="containment-header">
+    <h2>🦠 SALLE 5 — LABORATOIRE DE CONFINEMENT P4</h2>
+    <div class="containment-timer" id="containment-timer">
+      ⏰ PURGE AUTOMATIQUE : <span id="countdown">05:00</span>
+    </div>
+  </div>
+  
+  <div class="alert biohazard-alert">
+    <div class="alert-icon">☣️</div>
+    <div class="alert-content">
+      <strong>BREACH DE CONFINEMENT BIOLOGIQUE NIVEAU 4</strong><br>
+      Le virus a muté et s'est échappé ! Vous êtes enfermé dans le laboratoire P4.<br>
+      <strong>TROUVEZ LE CODE D'URGENCE AVANT LA PURGE AUTOMATIQUE !</strong>
+    </div>
+  </div>
+
+  <div class="containment-status">
+    <h4>� État des équipements de confinement</h4>
+    <div class="containment-grid">
+      {% for equip_name, status in containment_data.equipements_bloques.items() %}
+      <div class="equipment-status {% if 'VERROUILLÉ' in status or 'ISOLÉ' in status %}equipment-critical{% elif 'ATTENTE' in status or 'AUTONOMIE' in status %}equipment-warning{% else %}equipment-active{% endif %}">
+        <span class="status-icon">
+          {% if 'VERROUILLÉ' in status %}🔒
+          {% elif 'ATTENTE' in status %}⏸️
+          {% elif 'ISOLÉ' in status %}📡
+          {% elif 'AUTONOMIE' in status %}🔋
+          {% elif 'ACTIFS' in status %}🚨
+          {% endif %}
+        </span>
+        <span class="equipment-name">{{ equip_name.replace('_', ' ').title() }}</span>
+        <span class="status-text">{{ status }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="laboratory-clues">
+    <h4>🔬 Indices des équipements de laboratoire</h4>
+    <div class="clues-grid">
+      {% for indice in containment_data.indices_laboratoire %}
+      <div class="clue-card">
+        <div class="clue-header">
+          <h6>{{ indice.source }}</h6>
+          <div class="clue-badge">INDICE {{ loop.index }}/5</div>
+        </div>
+        <div class="clue-content">
+          <div class="clue-message">{{ indice.message }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="consequences-warning">
+    <h4>� Conséquences du protocole de purge</h4>
+    <div class="consequences-list">
+      {% for consequence in containment_data.consequences_echec %}
+      <div class="consequence-item">{{ consequence }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
   {% if message %}
-    <div class="msg">{{ message }}</div>
+    <div class="msg containment-message">{{ message }}</div>
   {% endif %}
-  <form method="post">
-    {% for q, options, expected in questions %}
-      <fieldset>
-        <legend>{{ q }}</legend>
-        {% for opt in options %}
-          <label><input type="radio" name="q{{ loop.index0 }}" value="{{ opt }}" required> {{ opt }}</label><br>
-        {% endfor %}
-      </fieldset>
-    {% endfor %}
-    <button type="submit">Valider</button>
-  </form>
+
+  <div class="code-input-section">
+    <h4>� DÉVERROUILLAGE D'URGENCE</h4>
+    <div class="instruction-containment">
+      <strong>PROCÉDURE :</strong> Analysez les 5 indices ci-dessus pour reconstituer le code de déverrouillage d'urgence (5 chiffres).
+    </div>
+
+    <form method="post" class="containment-form" id="containment-form">
+      <div class="code-input-container">
+        <div class="code-input-group">
+          <label for="containment_code" class="code-label">� Code de déverrouillage d'urgence :</label>
+          <input type="text" 
+                 name="containment_code" 
+                 id="containment_code"
+                 placeholder="?????﻿" 
+                 pattern="[0-9]{5}"
+                 title="Code de 5 chiffres (0-9 uniquement)"
+                 maxlength="5"
+                 class="code-input-field"
+                 required>
+        </div>
+        <div class="code-help">
+          💡 Chaque équipement révèle un chiffre. Analysez les détails techniques et les calculs.
+        </div>
+      </div>
+
+      <div class="submit-section">
+        <div class="final-warning">
+          ☣️ ATTENTION ! Une fois le code saisi, les sas se déverrouilleront ou la purge s'activera !
+        </div>
+        <button type="submit" class="btn-containment" id="unlock-btn">
+          � DÉVERROUILLER LES SAS D'URGENCE
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<script>
+// Timer de purge automatique 5 minutes
+let timeLeft = 300; // 5 minutes en secondes
+const timerElement = document.getElementById('countdown');
+const unlockBtn = document.getElementById('unlock-btn');
+
+function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Changer la couleur selon le temps restant
+    const timerContainer = document.getElementById('containment-timer');
+    if (timeLeft <= 60) {
+        timerContainer.style.background = 'linear-gradient(45deg, #ff1744, #d50000)';
+        timerContainer.style.animation = 'critical-pulse 0.3s infinite';
+    } else if (timeLeft <= 120) {
+        timerContainer.style.background = 'linear-gradient(45deg, #ff6f00, #e65100)';
+        timerContainer.style.animation = 'warning-pulse 0.8s infinite';
+    }
+    
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        timerElement.textContent = "00:00";
+        unlockBtn.textContent = "💀 PURGE ACTIVÉE - VOUS ÊTES ÉLIMINÉ";
+        unlockBtn.disabled = true;
+        unlockBtn.style.background = '#424242';
+        
+        // Auto-submit avec failure
+        setTimeout(() => {
+            document.getElementById('containment-form').submit();
+        }, 1000);
+    }
+    
+    timeLeft--;
+}
+
+const timerInterval = setInterval(updateTimer, 1000);
+updateTimer(); // Appel initial
+
+// Effets visuels de confinement
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des équipements critiques
+    const criticalEquipment = document.querySelectorAll('.equipment-critical');
+    criticalEquipment.forEach((equipment, index) => {
+        equipment.style.animationDelay = `${index * 0.3}s`;
+    });
+    
+    // Formatage automatique du code
+    const codeInput = document.getElementById('containment_code');
+    codeInput.addEventListener('input', function(e) {
+        // Garder seulement les chiffres
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Limiter à 5 chiffres
+        if (this.value.length > 5) {
+            this.value = this.value.slice(0, 5);
+        }
+    });
+    
+    // Validation form avec confirmation biologique
+    document.getElementById('containment-form').addEventListener('submit', function(e) {
+        if (timeLeft > 0) {
+            const code = codeInput.value;
+            const confirmed = confirm(`☣️ DÉVERROUILLAGE BIOLOGIQUE ☣️\n\nCode saisi: ${code}\n\nATTENTION: Cette action est irréversible !\n• Code correct = Évacuation réussie\n• Code incorrect = Purge immédiate\n\nConfirmez-vous le déverrouillage ?`);
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+
+<style>
+/* Styles spécifiques Room 5 - Confinement Biologique */
+.containment-card {
+  background: linear-gradient(135deg, #0d1421 0%, #1a1a2e 100%);
+  border: 3px solid #4caf50;
+  box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
+  animation: biohazard-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes biohazard-glow {
+  from { box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
+  to { box-shadow: 0 0 40px rgba(255, 235, 59, 0.4); }
+}
+
+.containment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: linear-gradient(90deg, #1b5e20, #2e7d32);
+  border-radius: 10px;
+  border: 2px solid #66bb6a;
+}
+
+.containment-header h2 {
+  color: #ffffff;
+  font-size: 1.4em;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.containment-timer {
+  background: linear-gradient(45deg, #4caf50, #388e3c);
+  padding: 10px 20px;
+  border-radius: 25px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1em;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  border: 2px solid #a5d6a7;
+}
+
+@keyframes critical-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes warning-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+.biohazard-alert {
+  background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+  border: 3px solid #ffcc02;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  animation: biohazard-blink 1.8s ease-in-out infinite;
+}
+
+@keyframes biohazard-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.clues-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.clue-card {
+  background: linear-gradient(135deg, #263238 0%, #37474f 100%);
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+}
+
+.clue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #4caf50;
+}
+
+.clue-header h6 {
+  color: #66bb6a;
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.clue-badge {
+  background: #4caf50;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.clue-message {
+  color: #e8f5e8;
+  line-height: 1.5;
+  font-size: 0.95em;
+}
+
+.code-input-field {
+  width: 200px;
+  padding: 15px 20px;
+  font-size: 2em;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-align: center;
+  background: rgba(76, 175, 80, 0.1);
+  border: 3px solid #4caf50;
+  border-radius: 10px;
+  color: #ffffff;
+  letter-spacing: 8px;
+}
+
+.btn-containment {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  color: white;
+  border: none;
+  padding: 18px 35px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  border: 2px solid #66bb6a;
+}
+
+.alert-icon {
+  font-size: 3em;
+  margin-right: 20px;
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.alert-content {
+  flex: 1;
+  color: #ffffff;
+  line-height: 1.6;
+}
+
+.emergency-status {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 2px solid #757575;
+}
+
+.emergency-status h4 {
+  color: #ff9800;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.systems-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+.system-status {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 5px 0;
+}
+
+.system-critical {
+  background: linear-gradient(90deg, rgba(244, 67, 54, 0.2), rgba(198, 40, 40, 0.2));
+  border: 1px solid #f44336;
+  animation: critical-flash 1s ease-in-out infinite alternate;
+}
+
+.system-warning {
+  background: linear-gradient(90deg, rgba(255, 152, 0, 0.2), rgba(230, 81, 0, 0.2));
+  border: 1px solid #ff9800;
+}
+
+@keyframes critical-flash {
+  from { background: rgba(244, 67, 54, 0.1); }
+  to { background: rgba(244, 67, 54, 0.3); }
+}
+
+.status-icon {
+  font-size: 1.2em;
+  margin-right: 10px;
+  min-width: 20px;
+}
+
+.system-name {
+  font-weight: bold;
+  color: #e0e0e0;
+  min-width: 150px;
+}
+
+.status-text {
+  color: #ffcdd2;
+  font-style: italic;
+  flex: 1;
+}
+
+.consequences-warning {
+  background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 2px solid #ffab40;
+}
+
+.consequences-warning h4 {
+  color: #ffffff;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.consequences-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.consequence-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 15px;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.95em;
+  border-left: 4px solid #ffab40;
+}
+
+.protocols-section {
+  margin-top: 30px;
+}
+
+.protocols-section h4 {
+  text-align: center;
+  color: #4caf50;
+  font-size: 1.3em;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+.instruction-emergency {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  padding: 15px;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  margin: 20px 0;
+  border: 2px solid #42a5f5;
+}
+
+.protocol-card {
+  background: linear-gradient(135deg, #2e2e48 0%, #3c3c5c 100%);
+  border: 2px solid #5c6bc0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 8px 24px rgba(92, 107, 192, 0.2);
+  transition: all 0.3s ease;
+}
+
+.protocol-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(92, 107, 192, 0.3);
+  border-color: #7986cb;
+}
+
+.protocol-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #5c6bc0;
+}
+
+.protocol-header h5 {
+  color: #7986cb;
+  font-size: 1.2em;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(121, 134, 203, 0.5);
+}
+
+.category-badge {
+  background: linear-gradient(45deg, #9c27b0, #673ab7);
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.question-content {
+  margin-top: 15px;
+}
+
+.question-text {
+  color: #e8eaf6;
+  font-size: 1.1em;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-label {
+  display: block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.option-label:hover .option-content {
+  background: rgba(121, 134, 203, 0.2);
+  border-color: #7986cb;
+  transform: translateX(5px);
+}
+
+.option-radio {
+  display: none;
+}
+
+.option-radio:checked + .option-content {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  border-color: #66bb6a;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.option-indicator {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #9e9e9e;
+  border-radius: 50%;
+  margin-right: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.option-radio:checked + .option-content .option-indicator {
+  border-color: #ffffff;
+  background: #ffffff;
+}
+
+.option-radio:checked + .option-content .option-indicator::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.option-text {
+  flex: 1;
+  color: #f0f0f0;
+  line-height: 1.5;
+  font-size: 0.95em;
+}
+
+.option-radio:checked + .option-content .option-text {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.submit-section {
+  margin-top: 40px;
+  text-align: center;
+  padding: 30px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 15px;
+  border: 3px solid #ff5722;
+}
+
+.final-warning {
+  background: linear-gradient(45deg, #ff9800, #f57c00);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  font-size: 1.1em;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  border: 2px solid #ffcc02;
+}
+
+.btn-emergency {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: white;
+  border: none;
+  padding: 20px 40px;
+  font-size: 1.2em;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4);
+  border: 3px solid #ff5252;
+}
+
+.btn-emergency:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(211, 47, 47, 0.6);
+}
+
+.btn-emergency:disabled {
+  background: #424242;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.emergency-message {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .emergency-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .systems-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .consequences-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .protocol-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .option-content {
+    padding: 12px;
+  }
+  
+  .option-text {
+    font-size: 0.9em;
+  }
+}
+</style>
 {% endblock %}
