@@ -1,16 +1,473 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="card">
-  <h2>Salle 4 — Console réseau</h2>
-  <p>Activez les ports dans le bon ordre (indice: HTTPS → SSH → HTTP).</p>
-  <div class="muted" style="margin-top:8px">Astuce: Chaque service a un port bien connu — HTTPS = 443, SSH = 22, HTTP = 80. Entrez la séquence séparée par des virgules.</div>
+  <h2>🧬 Salle 4 — Laboratoire d'analyse génétique</h2>
+  
+  <div class="alert">
+    <strong>ALERTE BIOLOGIQUE NIVEAU 4 :</strong> Virus inconnu détecté !<br>
+    Le séquenceur ADN automatique est hors service. Analyse manuelle requise d'urgence.
+  </div>
+  
+  <p><strong>Mission :</strong> Reconstituer la séquence génétique complète du virus à partir des échantillons de patients infectés.</p>
+  <p><em>Durée estimée : 12-18 minutes — Analyse génétique complexe avec indices cryptés</em></p>
+
+  <div class="patients-infected">
+    <h4>🦠 Dossiers patients infectés - Analyses en cours</h4>
+    
+    <div class="genetic-grid">
+      {% for patient in genetic_data.patients_infectes %}
+      <div class="patient-genetic-card">
+        <div class="patient-header-genetic">
+          <h5>{{ patient.identifiant }}</h5>
+          <div class="status-badge status-{{ patient.statut.split()[0].lower() }}">{{ patient.statut.split()[0] }}</div>
+        </div>
+        
+        <div class="patient-bio-info">
+          <div class="bio-row">
+            <strong>👤 Patient :</strong> {{ patient.nom }}
+          </div>
+          <div class="bio-row">
+            <strong>🎂 Âge :</strong> {{ patient.age }} ans | 
+            <strong>💼 Fonction :</strong> {{ patient.fonction }}
+          </div>
+          <div class="bio-row">
+            <strong>📍 Localisation :</strong> {{ patient.localisation }}
+          </div>
+        </div>
+
+        <div class="genetic-analysis">
+          <div class="analysis-header">
+            <h6>🔬 Données d'analyse génétique</h6>
+          </div>
+          
+          <div class="genetic-stats-grid">
+            <div class="stat-genetic">
+              <span class="label-genetic">🧪 Séquence partielle :</span>
+              <span class="value-sequence">{{ patient.sequence_partielle }}</span>
+            </div>
+            <div class="stat-genetic">
+              <span class="label-genetic">⚗️ Poids moléculaire :</span>
+              <span class="value-weight">{{ patient.poids_moleculaire }} g/mol</span>
+            </div>
+            <div class="stat-genetic">
+              <span class="label-genetic">🌡️ T° échantillon :</span>
+              <span class="value-temp">{{ patient.temperature_echantillon }}°C</span>
+            </div>
+            <div class="stat-genetic">
+              <span class="label-genetic">📈 Taux mutation :</span>
+              <span class="value-mutation">{{ (patient.taux_mutation * 100)|round(1) }}%</span>
+            </div>
+            <div class="stat-genetic">
+              <span class="label-genetic">⏰ Heure prélèvement :</span>
+              <span class="value-time">{{ patient.heure_prelevement }}</span>
+            </div>
+          </div>
+
+          <div class="analysis-complete">
+            <strong>📋 Rapport d'analyse complète :</strong>
+            <div class="analysis-text">{{ patient.analyse_complete }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="lab-tools">
+    <h4>🔧 Outils de laboratoire disponibles</h4>
+    <div class="tools-grid">
+      {% for tool_name, tool_info in genetic_data.outils_analyse.items() %}
+      <div class="tool-card {% if not tool_info.disponible %}tool-disabled{% endif %}">
+        <h6>{{ tool_name.replace('_', ' ').title() }}</h6>
+        <div class="tool-info">
+          {% for key, value in tool_info.items() %}
+            {% if key != 'disponible' %}
+            <div class="tool-detail">
+              <strong>{{ key.replace('_', ' ').title() }} :</strong> {{ value }}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="tool-status">
+          {% if tool_info.disponible %}
+            <span class="status-available">✅ Opérationnel</span>
+          {% else %}
+            <span class="status-unavailable">❌ Hors service</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="genetic-hints">
+    <h4>🧠 Indices d'analyse génétique</h4>
+    <div class="hints-genetic-list">
+      {% for indice in genetic_data.indices_laboratoire %}
+      <div class="hint-genetic-item">{{ indice }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="genetic-rules">
+    <h4>📚 Référentiel de biologie moléculaire</h4>
+    <div class="rules-grid">
+      <div class="rule-card">
+        <h6>🔗 Appariement Watson-Crick</h6>
+        <div class="rule-content">
+          {% for base, complement in genetic_data.regles_genetiques.appariement_watson_crick.items() %}
+          <div class="pairing">{{ base }} ↔ {{ complement }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <div class="rule-card">
+        <h6>🌐 Liaisons hydrogène</h6>
+        <div class="rule-content">
+          {% for pair, bonds in genetic_data.regles_genetiques.liaisons_hydrogene.items() %}
+          <div class="bonds">{{ pair }} : {{ bonds }} liaisons</div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <div class="rule-card">
+        <h6>🏗️ Classification structurale</h6>
+        <div class="rule-content">
+          <div class="structure-type">
+            <strong>Purines (double cycle) :</strong> {{ genetic_data.regles_genetiques.classification.purines|join(', ') }}
+          </div>
+          <div class="structure-type">
+            <strong>Pyrimidines (simple cycle) :</strong> {{ genetic_data.regles_genetiques.classification.pyrimidines|join(', ') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {% if message %}
     <div class="msg">{{ message }}</div>
   {% endif %}
-  <form method="post">
-    <label>Séquence (ex: 443,22,80)</label>
-    <input type="text" name="seq" placeholder="443,22,80" required>
-    <button type="submit">Synchroniser</button>
-  </form>
+
+  <div class="sequence-input">
+    <h4>🧬 Reconstruction de séquence</h4>
+    <div class="sequence-form-container">
+      <p class="instruction">Entrez la séquence génétique complète du virus (4 nucléotides) :</p>
+      <form method="post" class="genetic-form">
+        <div class="sequence-input-group">
+          <label for="sequence" class="sequence-label">Séquence ADN virale :</label>
+          <input type="text" 
+                 name="sequence" 
+                 id="sequence"
+                 placeholder="?????" 
+                 pattern="[ATCGatcg]{4}"
+                 title="Séquence de 4 nucléotides (A, T, C, G uniquement)"
+                 maxlength="4"
+                 class="sequence-input-field"
+                 required>
+        </div>
+        <div class="form-help">
+          💡 Utilisez uniquement les lettres A, T, C, G (4 caractères exactement)
+        </div>
+        <button type="submit" class="btn-analyze">🔬 Analyser la séquence</button>
+      </form>
+    </div>
+  </div>
 </div>
+
+<style>
+/* Styles spécifiques pour la room 4 génétique */
+.genetic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.patient-genetic-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #4a90e2;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.2);
+  transition: all 0.3s ease;
+}
+
+.patient-genetic-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(74, 144, 226, 0.3);
+  border-color: #6bb6ff;
+}
+
+.patient-header-genetic {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4a90e2;
+}
+
+.patient-header-genetic h5 {
+  color: #6bb6ff;
+  font-size: 1.3em;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(107, 182, 255, 0.5);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-patient { background: #ff6b6b; color: white; }
+.status-contamination { background: #ffa726; color: white; }
+.status-exposition { background: #ffeb3b; color: #333; }
+
+.patient-bio-info {
+  margin: 15px 0;
+  padding: 12px;
+  background: rgba(74, 144, 226, 0.1);
+  border-radius: 8px;
+}
+
+.bio-row {
+  margin: 8px 0;
+  color: #e0e0e0;
+  font-size: 0.9em;
+}
+
+.genetic-analysis {
+  margin-top: 15px;
+}
+
+.analysis-header h6 {
+  color: #4ecdc4;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.genetic-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.stat-genetic {
+  background: rgba(78, 205, 196, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  border-left: 3px solid #4ecdc4;
+}
+
+.label-genetic {
+  font-size: 0.85em;
+  color: #4ecdc4;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.value-sequence { color: #ff6b9d; font-weight: bold; font-family: 'Courier New', monospace; }
+.value-weight { color: #ffa726; font-weight: bold; }
+.value-temp { color: #42a5f5; font-weight: bold; }
+.value-mutation { color: #ff5722; font-weight: bold; }
+.value-time { color: #9c27b0; font-weight: bold; }
+
+.analysis-complete {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+.analysis-text {
+  color: #f0f0f0;
+  line-height: 1.6;
+  margin-top: 8px;
+  text-align: justify;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.tool-card {
+  background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+  border-radius: 10px;
+  padding: 15px;
+  border: 2px solid #4ecdc4;
+}
+
+.tool-disabled {
+  background: linear-gradient(135deg, #424242 0%, #616161 100%);
+  border-color: #757575;
+  opacity: 0.7;
+}
+
+.tool-card h6 {
+  color: #4ecdc4;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.tool-detail {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #e0e0e0;
+}
+
+.status-available { color: #4caf50; font-weight: bold; }
+.status-unavailable { color: #f44336; font-weight: bold; }
+
+.hints-genetic-list {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.hint-genetic-item {
+  background: linear-gradient(90deg, rgba(156, 39, 176, 0.2) 0%, rgba(233, 30, 99, 0.2) 100%);
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #9c27b0;
+  color: #f0f0f0;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.rule-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  padding: 18px;
+  border: 2px solid #9c88ff;
+}
+
+.rule-card h6 {
+  color: #e1bee7;
+  margin-bottom: 12px;
+  font-size: 1.1em;
+}
+
+.pairing, .bonds, .structure-type {
+  margin: 8px 0;
+  color: #f3e5f5;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.sequence-form-container {
+  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  border-radius: 12px;
+  padding: 25px;
+  border: 2px solid #5c6bc0;
+  margin: 20px 0;
+}
+
+.instruction {
+  color: #e8eaf6;
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.sequence-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sequence-label {
+  color: #c5cae9;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.sequence-input-field {
+  width: 200px;
+  padding: 12px 16px;
+  font-size: 1.4em;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #5c6bc0;
+  border-radius: 8px;
+  color: #ffffff;
+  letter-spacing: 4px;
+}
+
+.sequence-input-field:focus {
+  outline: none;
+  border-color: #7986cb;
+  box-shadow: 0 0 15px rgba(121, 134, 203, 0.5);
+}
+
+.form-help {
+  text-align: center;
+  color: #9fa8da;
+  font-size: 0.9em;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.btn-analyze {
+  background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-analyze:hover {
+  background: linear-gradient(135deg, #66bb6a 0%, #9ccc65 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .genetic-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .genetic-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tools-grid, .rules-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sequence-input-field {
+    width: 160px;
+    font-size: 1.2em;
+    letter-spacing: 2px;
+  }
+}
+</style>
 {% endblock %}

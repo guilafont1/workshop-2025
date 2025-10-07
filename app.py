@@ -187,11 +187,14 @@ def room4():
     r = _check_access_for_room(state, 4)
     if r:
         return r
+    
+    # Charger les données génétiques pour l'affichage
+    genetic_data = puzzles.room4_get_genetic_data()
+    
     msg = None
     if request.method == "POST":
-        raw = request.form.get("seq", "").replace(" ", "")
-        seq = [x for x in raw.split(",") if x]
-        ok, info = puzzles.room4_validate_sequence(seq)
+        sequence_input = request.form.get("sequence", "").strip()
+        ok, info = puzzles.room4_validate_genetic_sequence(sequence_input)
         msg = info
         if ok:
             state["progress"]["room4"] = True
@@ -201,7 +204,8 @@ def room4():
             state["room5_start"] = int(time.time())
             save_state(state)
             return redirect(url_for("room5"))
-    return render_template("room4.html", message=msg)
+    
+    return render_template("room4.html", genetic_data=genetic_data, message=msg)
 
 # ---------- ROOM 5 ----------
 @app.route("/room/5", methods=["GET", "POST"])
@@ -214,21 +218,58 @@ def room5():
         # If not started via room4, start now (fallback)
         state["room5_start"] = int(time.time())
         save_state(state)
+    
     msg = None
-    questions = puzzles.FINAL_QUESTIONS
+    containment_data = puzzles.room5_get_containment_data()
+    
     if request.method == "POST":
-        answers = [request.form.get(f"q{i}", "") for i in range(len(questions))]
-        ok, info = puzzles.room5_check_answers(answers, state["room5_start"], int(time.time()))
+        containment_code = request.form.get("containment_code", "").strip()
+        ok, info = puzzles.room5_validate_containment_code(containment_code, state["room5_start"], int(time.time()))
         if ok:
             state["progress"]["room5"] = True
+            save_state(state)
+            # Start timer for room6
+            state = load_state()
+            state["room6_start"] = int(time.time())
+            save_state(state)
+            return redirect(url_for("room6"))
+        else:
+            msg = info
+            # On failure but still within time, let them retry
+            if "PROTOCOLE DE PURGE ACTIVÉ" in info:
+                return redirect(url_for("fail"))
+    
+    return render_template("room5.html", containment_data=containment_data, message=msg)
+
+# ---------- ROOM 6 ----------
+@app.route("/room/6", methods=["GET", "POST"])
+def room6():
+    state = load_state()
+    r = _check_access_for_room(state, 6)
+    if r:
+        return r
+    if state.get("room6_start") is None:
+        # If not started via room5, start now (fallback)
+        state["room6_start"] = int(time.time())
+        save_state(state)
+    
+    msg = None
+    patient_data = puzzles.room6_get_patient_zero_data()
+    
+    if request.method == "POST":
+        antidote_formula = request.form.get("antidote_formula", "").strip()
+        ok, info = puzzles.room6_validate_antidote_formula(antidote_formula, state["room6_start"], int(time.time()))
+        if ok:
+            state["progress"]["room6"] = True
             save_state(state)
             return redirect(url_for("success"))
         else:
             msg = info
             # On failure but still within time, let them retry
-            if "Temps dépassé" in info:
+            if "PATIENT ZÉRO DÉCÉDÉ" in info:
                 return redirect(url_for("fail"))
-    return render_template("room5.html", questions=questions, message=msg)
+    
+    return render_template("room6.html", patient_data=patient_data, message=msg)
 
 @app.route("/success")
 def success():
