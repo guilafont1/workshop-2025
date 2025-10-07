@@ -7,8 +7,8 @@ _lock = threading.Lock()
 DEFAULT_STATE = {
     "team_name": None,
     "started_at": None,
-    "progress": { "room1": False, "room2": False, "room3": False, "room4": False, "room5": False },
-    "room5_start": None,
+    "progress": { "room1": False, "room2": False, "room3": False, "room4": False, "room5": False , "room6": False },
+    "room6_start": None,
     "roles": {}  # role -> player name
 }
 
