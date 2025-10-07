@@ -1,9 +1,9 @@
 {
-  "team_name": "1",
-  "started_at": 1759742457,
+  "team_name": "scs",
+  "started_at": 1759823318,
   "progress": {
-    "room1": false,
-    "room2": false,
+    "room1": true,
+    "room2": true,
     "room3": false,
     "room4": false,
     "room5": false

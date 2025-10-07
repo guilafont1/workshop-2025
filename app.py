@@ -105,16 +105,19 @@ def room1():
     if r:
         return r
     msg = None
-    logs = open(os.path.join("data", "logs.txt"), "r", encoding="utf-8").read()
+    patients_data = puzzles.room1_get_patients_data()
     if request.method == "POST":
-        pw = request.form.get("password", "").strip()
-        if puzzles.room1_check_password(pw):
-            state["progress"]["room1"] = True
-            save_state(state)
-            return redirect(url_for("room2"))
-        else:
-            msg = "Mot de passe incorrect."
-    return render_template("room1.html", logs=logs, message=msg)
+        try:
+            bpm = int(request.form.get("bpm"))
+            if puzzles.room1_check_bpm(bpm):
+                state["progress"]["room1"] = True
+                save_state(state)
+                return redirect(url_for("room2"))
+            else:
+                msg = f"BPM incorrect. Vérifiez votre calcul pour les patients de 68-72 ans."
+        except (ValueError, TypeError):
+            msg = "Veuillez entrer un nombre valide."
+    return render_template("room1.html", patients_data=patients_data, message=msg)
 
 # ---------- ROOM 2 ----------
 @app.route("/room/2", methods=["GET", "POST"])
@@ -124,21 +127,26 @@ def room2():
     if r:
         return r
     msg = None
-    corrupted = json.dumps(puzzles.room2_load_corrupted(), ensure_ascii=False, indent=2)
+    prescription_data = puzzles.room2_get_prescription_data()
     if request.method == "POST":
-        try:
-            age = int(request.form.get("age"))
-            temperature = float(request.form.get("temperature"))
-            bpm = int(request.form.get("bpm"))
-        except Exception:
-            age, temperature, bpm = 0, 0, 0
-        ok, info = puzzles.room2_validate_solution(age, temperature, bpm)
-        msg = info
-        if ok:
-            state["progress"]["room2"] = True
-            save_state(state)
-            return redirect(url_for("room3"))
-    return render_template("room2.html", corrupted=corrupted, message=msg)
+        # Récupérer les prescriptions du formulaire
+        prescriptions = {}
+        for patient in prescription_data["patients"]:
+            nom = patient["nom"]
+            medicament = request.form.get(nom, "").strip()
+            if medicament:
+                prescriptions[nom] = medicament
+        
+        if len(prescriptions) == len(prescription_data["patients"]):
+            ok, info = puzzles.room2_validate_prescriptions(prescriptions)
+            msg = info
+            if ok:
+                state["progress"]["room2"] = True
+                save_state(state)
+                return redirect(url_for("room3"))
+        else:
+            msg = "Veuillez prescrire un médicament à chaque patient."
+    return render_template("room2.html", prescription_data=prescription_data, message=msg)
 
 # ---------- ROOM 3 ----------
 @app.route("/room/3", methods=["GET", "POST"])
@@ -148,17 +156,29 @@ def room3():
     if r:
         return r
     msg, secret = None, None
-    virus_code = open(os.path.join("data", "virus_code.py"), "r", encoding="utf-8").read()
+    hydration_data = puzzles.room3_get_hydration_data()
     if request.method == "POST":
-        key = request.form.get("key", "").strip()
-        ok, res = puzzles.room3_decrypt_secret(key)
-        if ok:
-            secret = res
-            state["progress"]["room3"] = True
-            save_state(state)
-        else:
-            msg = res
-    return render_template("room3.html", virus_code=virus_code, message=msg, secret=secret)
+        # Récupérer les choix d'hydratation du formulaire
+        hydration_choices = {}
+        for patient in hydration_data["patients"]:
+            nom = patient["nom"]
+            try:
+                water_amount = float(request.form.get(nom, ""))
+                hydration_choices[nom] = water_amount
+            except (ValueError, TypeError):
+                msg = "Veuillez sélectionner une quantité d'eau pour chaque patient."
+                break
+        
+        if not msg and len(hydration_choices) == len(hydration_data["patients"]):
+            ok, info = puzzles.room3_validate_hydration(hydration_choices)
+            msg = info
+            if ok:
+                secret = "Hydratation optimisée ! Tous les patients sont stabilisés."
+                state["progress"]["room3"] = True
+                save_state(state)
+                # Redirection vers room4 après succès
+                return redirect(url_for("room4"))
+    return render_template("room3.html", hydration_data=hydration_data, message=msg, secret=secret)
 
 # ---------- ROOM 4 ----------
 @app.route("/room/4", methods=["GET", "POST"])
