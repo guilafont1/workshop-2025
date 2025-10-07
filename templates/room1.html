@@ -1,16 +1,545 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="card">
-  <h2>Salle 1 — Authentification</h2>
-  <pre>{{ logs }}</pre>
-  <p>Entrez le mot de passe originel (en clair, pas le hash) :</p>
-  <div class="muted" style="margin-top:8px">Astuce: Cherchez dans le bloc de logs une ligne encodée en base64 et un SHA-256 — il y a une piste claire.</div>
-  {% if message %}
-    <div class="msg">{{ message }}</div>
-  {% endif %}
-  <form method="post">
-    <input type="text" name="password" placeholder="Mot de passe" required>
-    <button type="submit">Valider</button>
-  </form>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Surveillance Cardiaque</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeOut 3s ease-in-out 2s forwards;
+        }
+
+        .boot-text {
+            font-size: 24px;
+            color: #00ff00;
+            text-align: center;
+            animation: typing 2s steps(40, end);
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        .retro-computer {
+            max-width: 1200px;
+            margin: 50px auto;
+            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 0, 0.3),
+                inset 0 0 20px rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            animation: computerAppear 1s ease-out 3s both;
+            min-height: auto;
+        }
+
+        @keyframes computerAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotateY(10deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        .screen {
+            background: #001100;
+            border: 4px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 255, 0, 0.2),
+                0 0 40px rgba(0, 255, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            color: #000;
+            padding: 10px 20px;
+            margin: -20px -20px 20px -20px;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            border-radius: 6px 6px 0 0;
+            text-shadow: none;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { box-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
+            to { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+        }
+
+        .alert-box {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #ff6666;
+            text-align: center;
+            font-size: 16px;
+            animation: alertBlink 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes alertBlink {
+            from { border-color: #ff0000; }
+            to { border-color: #ff6666; }
+        }
+
+        .patients-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+
+        .patients-table th,
+        .patients-table td {
+            border: 1px solid #00ff00;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .patients-table th:nth-child(1),
+        .patients-table td:nth-child(1) { width: 12%; }
+        .patients-table th:nth-child(2),
+        .patients-table td:nth-child(2) { width: 8%; text-align: center; }
+        .patients-table th:nth-child(3),
+        .patients-table td:nth-child(3) { width: 10%; text-align: center; }
+        .patients-table th:nth-child(4),
+        .patients-table td:nth-child(4) { width: 70%; }
+
+        .patients-table th {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ff00;
+            text-align: center;
+        }
+
+        .patients-table tr:nth-child(even) {
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .patients-table tr:hover {
+            background: rgba(0, 255, 0, 0.15);
+            transition: background 0.3s;
+        }
+
+        .age-68-72 {
+            background: rgba(255, 255, 0, 0.2) !important;
+            color: #ffff00;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(255, 255, 0, 0.3);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .retro-computer {
+                margin: 20px auto;
+                padding: 15px;
+            }
+            
+            .patients-table {
+                font-size: 10px;
+            }
+            
+            .patients-table th,
+            .patients-table td {
+                padding: 6px 4px;
+            }
+            
+            .title-bar {
+                font-size: 14px;
+                padding: 8px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .retro-computer {
+                margin: 10px;
+                padding: 10px;
+            }
+            
+            .patients-table {
+                font-size: 9px;
+            }
+            
+            .patients-table th,
+            .patients-table td {
+                padding: 4px 2px;
+            }
+        }
+
+        .hint-panel {
+            background: rgba(0, 100, 255, 0.1);
+            border: 2px solid #0066ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #66ccff;
+        }
+
+        .hint-panel h4 {
+            color: #0099ff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #0099ff;
+        }
+
+        .control-panel {
+            background: rgba(0, 255, 0, 0.05);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-group label {
+            color: #00ff00;
+            font-weight: bold;
+            min-width: 200px;
+            text-shadow: 0 0 3px #00ff00;
+        }
+
+        .input-group input {
+            background: #001100;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            width: 100px;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            
+            .input-group label {
+                min-width: auto;
+                text-align: center;
+            }
+            
+            .input-group input {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+        }
+
+        .submit-btn {
+            background: linear-gradient(145deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(145deg, #00cc00, #009900);
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .calculation-hint {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px dashed #ffff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            color: #ffff00;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .comment-cell {
+            font-size: 10px;
+            line-height: 1.4;
+            max-width: 300px;
+        }
+
+        .mobile-patients {
+            display: none;
+        }
+
+        .mobile-patient-card {
+            background: rgba(0, 255, 0, 0.05);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .mobile-patient-card.age-68-72 {
+            background: rgba(255, 255, 0, 0.2);
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .patient-header h6 {
+            margin: 0;
+            color: #00ff00;
+            font-size: 14px;
+        }
+
+        .mobile-patient-card.age-68-72 .patient-header h6 {
+            color: #ffff00;
+        }
+
+        .bpm-badge {
+            background: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #00ff00;
+        }
+
+        .mobile-patient-card.age-68-72 .bpm-badge {
+            background: rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+            border-color: #ffff00;
+        }
+
+        .patient-comment {
+            font-size: 11px;
+            line-height: 1.4;
+            color: #cccccc;
+            font-style: italic;
+            border-top: 1px solid rgba(0, 255, 0, 0.3);
+            padding-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .patients-table {
+                display: none;
+            }
+            
+            .mobile-patients {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-screen">
+        <div class="boot-text">SYSTÈME DE SURVEILLANCE CARDIAQUE<br>INITIALISATION...</div>
+    </div>
+
+    <div class="retro-computer">
+        <div class="screen">
+            <div class="title-bar">
+                🫀 ÉPREUVE 1 : TROUVE LE RYTHME DU CŒUR 🫀
+            </div>
+
+            <div class="alert-box">
+                ⚠️ ALERTE SYSTÈME ⚠️<br>
+                Le système de surveillance cardiaque est bloqué !<br>
+                Pour débloquer : calculez le rythme cardiaque moyen d'un patient de 70 ans
+            </div>
+
+            <div class="hint-panel">
+                <h4>💡 MISSION</h4>
+                <p>• Repérez les patients âgés de <strong>68 à 72 ans</strong> dans le tableau</p>
+                <p>• Calculez leur <strong>rythme cardiaque moyen</strong></p>
+                <p>• Entrez le résultat pour débloquer le système</p>
+                <p><em>Durée estimée : 5 minutes</em></p>
+            </div>
+
+            <table class="patients-table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Âge</th>
+                        <th>Pouls (BPM)</th>
+                        <th>Commentaire infirmier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients_data.patients %}
+                    <tr {% if patient.age >= 68 and patient.age <= 72 %}class="age-68-72"{% endif %}>
+                        <td><strong>{{ patient.nom }}</strong></td>
+                        <td>{{ patient.age }}</td>
+                        <td><strong>{{ patient.bpm }}</strong></td>
+                        <td class="comment-cell">"{{ patient.commentaire }}"</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="mobile-patients">
+                {% for patient in patients_data.patients %}
+                <div class="mobile-patient-card {% if patient.age >= 68 and patient.age <= 72 %}age-68-72{% endif %}">
+                    <div class="patient-header">
+                        <h6>{{ patient.nom }} ({{ patient.age }} ans)</h6>
+                        <div class="bpm-badge">{{ patient.bpm }} BPM</div>
+                    </div>
+                    <div class="patient-comment">
+                        "{{ patient.commentaire }}"
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="hint-panel">
+                <h4>🎯 INDICE FUN</h4>
+                <p>"Le patient de 70 ans le plus heureux garde le secret du BPM. Trouvez-le pour continuer !"</p>
+            </div>
+
+            <div class="control-panel">
+                <form method="post">
+                    <div class="input-group">
+                        <label>🔢 RYTHME CARDIAQUE MOYEN (BPM) :</label>
+                        <input type="number" name="bpm" min="50" max="100" required placeholder="??">
+                        <button type="submit" class="submit-btn">Débloquer système</button>
+                    </div>
+                </form>
+
+                <div class="calculation-hint">
+                    💡 Astuce : (BPM₁ + BPM₂ + BPM₃ + ... ) ÷ Nombre de patients = Moyenne
+                </div>
+
+                {% if message %}
+                    <div class="message {% if 'incorrect' in message %}error{% else %}success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Effet de typing sur le titre
+        document.addEventListener('DOMContentLoaded', function() {
+            // Surligner automatiquement les patients 68-72 ans après 4 secondes
+            setTimeout(() => {
+                const targetRows = document.querySelectorAll('.age-68-72');
+                targetRows.forEach((row, index) => {
+                    setTimeout(() => {
+                        row.style.animation = 'pulse 1s ease-in-out 3 alternate';
+                    }, index * 200);
+                });
+            }, 4000);
+        });
+
+        // Son de clavier rétro (optionnel)
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT') {
+                // Petit effet sonore si nécessaire
+            }
+        });
+    </script>
+</body>
+</html>
