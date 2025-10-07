@@ -224,164 +224,102 @@ def room2_validate_prescriptions(prescriptions: Dict[str, str]) -> Tuple[bool, s
 # Puzzle complexe avec calculs, graphiques et monitoring patients
 def room3_get_hydration_data() -> Dict[str, Any]:
     """Retourne les données pour l'épreuve hydratation/température complexe"""
+    patients_data = [
+        {
+            "nom": "Alice",
+            "age": 34,
+            "poids": 65,
+            "temperature": 38.8,
+            "facteur_fievre": 950,  # (38.8-37) * 500 = 950ml
+            "pathologie": "Grippe saisonnière",
+            "hydratation_actuelle": 1.2
+        },
+        {
+            "nom": "Bob",
+            "age": 72,
+            "poids": 78,
+            "temperature": 39.4,
+            "facteur_fievre": 1200,  # (39.4-37) * 500 = 1200ml
+            "pathologie": "Insuffisance cardiaque",
+            "hydratation_actuelle": 0.9
+        },
+        {
+            "nom": "Clara",
+            "age": 28,
+            "poids": 58,
+            "temperature": 37.1,
+            "facteur_fievre": 0,  # Température normale
+            "pathologie": "Diabète",
+            "hydratation_actuelle": 2.2
+        },
+        {
+            "nom": "Daniel",
+            "age": 45,
+            "poids": 85,
+            "temperature": 40.1,
+            "facteur_fievre": 1550,  # (40.1-37) * 500 = 1550ml
+            "pathologie": "Infection",
+            "hydratation_actuelle": 1.1
+        },
+        {
+            "nom": "Emma",
+            "age": 19,
+            "poids": 52,
+            "temperature": 36.7,
+            "facteur_fievre": 0,  # Température normale
+            "pathologie": "Diabète",
+            "hydratation_actuelle": 1.8
+        }
+    ]
+
     return {
-        "patients": [
-            {
-                "nom": "Alice", 
-                "age": 34,
-                "poids": 65,
-                "temperature_actuelle": 38.8,
-                "temperatures_24h": [36.8, 37.2, 37.8, 38.2, 38.5, 38.8, 38.6],
-                "hydratation_actuelle": 1.2,
-                "urines_24h": 800,
-                "activite": "Repos au lit",
-                "pathologie": "Grippe saisonnière",
-                "medicaments": ["Paracétamol 1g x3/jour"]
-            },
-            {
-                "nom": "Bob", 
-                "age": 72,
-                "poids": 78,
-                "temperature_actuelle": 39.4,
-                "temperatures_24h": [37.1, 37.6, 38.2, 38.9, 39.2, 39.4, 39.1],
-                "hydratation_actuelle": 0.9,
-                "urines_24h": 600,
-                "activite": "Pneumonie - alité",
-                "pathologie": "Pneumonie bactérienne",
-                "medicaments": ["Antibiotiques", "Diurétiques (Furosémide)"]
-            },
-            {
-                "nom": "Clara", 
-                "age": 28,
-                "poids": 58,
-                "temperature_actuelle": 37.1,
-                "temperatures_24h": [36.9, 36.8, 37.0, 37.1, 37.0, 37.1, 37.0],
-                "hydratation_actuelle": 2.2,
-                "urines_24h": 1800,
-                "activite": "Marche 30min/jour",
-                "pathologie": "Diabète insipide léger",
-                "medicaments": ["Desmopressine (si besoin)"]
-            },
-            {
-                "nom": "Daniel", 
-                "age": 45,
-                "poids": 85,
-                "temperature_actuelle": 40.1,
-                "temperatures_24h": [38.5, 39.1, 39.6, 39.9, 40.0, 40.1, 39.8],
-                "hydratation_actuelle": 1.1,
-                "urines_24h": 500,
-                "activite": "Urgence - réanimation",
-                "pathologie": "Sepsis sévère",
-                "medicaments": ["Antibiotiques IV", "Vasopresseurs"]
-            },
-            {
-                "nom": "Emma", 
-                "age": 19,
-                "poids": 52,
-                "temperature_actuelle": 36.7,
-                "temperatures_24h": [36.5, 36.4, 36.6, 36.7, 36.8, 36.7, 36.6],
-                "hydratation_actuelle": 1.8,
-                "urines_24h": 1200,
-                "activite": "Sport intensif 2h",
-                "pathologie": "Sportive - déshydratation effort",
-                "medicaments": ["Électrolytes", "Magnésium"]
-            }
-        ],
-        "formules_calcul": {
-            "besoins_base": "30-35 mL/kg/jour (adulte normal)",
-            "fievre_supplement": "+500mL par degré au-dessus de 37°C",
-            "age_correction": "Personnes âgées (>65ans): +10-15%",
-            "poids_correction": "Adaptation selon poids corporel",
-            "pathologie_correction": "Diabète insipide: +50-100%, Sepsis: +40-60%",
-            "surveillance": "Diurèse normale: 1-2mL/kg/h soit 1500-2000mL/24h"
-        },
-        "indices_complexes": [
-            "🧮 Utilisez les formules de calcul pour déterminer les besoins exacts",
-            "🌡️ Chaque degré de fièvre au-dessus de 37°C = +500mL d'eau",
-            "👴 Les personnes âgées (>65ans) ont des besoins accrus de 10-15%",
-            "💊 Attention aux diurétiques qui augmentent les pertes hydriques",
-            "🏃 L'activité physique et les pathologies modifient les besoins",
-            "🚰 La diurèse (urines) indique l'état d'hydratation actuel",
-            "⚖️ Le poids corporel détermine les besoins de base en eau",
-            "🩺 Diabète insipide = besoins très augmentés, Sepsis = perfusion massive"
-        ],
-        "solution_calculs": {
-            "Alice": {
-                "calcul": "65kg × 30mL = 1950mL base + (38.8-37) × 500mL = +900mL = 2850mL",
-                "hydratation_optimale": 2.9,
-                "justification": "Fièvre élevée (38.8°C) nécessite compensation hydrique importante"
-            },
-            "Bob": {
-                "calcul": "78kg × 35mL = 2730mL base + (39.4-37) × 500mL = +1200mL + 15% âge = 4520mL",
-                "hydratation_optimale": 4.5,
-                "justification": "Pneumonie + fièvre forte + âge avancé + diurétiques = besoins très élevés"
-            },
-            "Clara": {
-                "calcul": "58kg × 30mL = 1740mL base + diabète insipide (+60%) = 2784mL",
-                "hydratation_optimale": 2.8,
-                "justification": "Diabète insipide compensé, température normale mais polyurie"
-            },
-            "Daniel": {
-                "calcul": "85kg × 35mL = 2975mL base + (40.1-37) × 500mL = +1550mL + sepsis (+50%) = 6787mL",
-                "hydratation_optimale": 6.8,
-                "justification": "Sepsis sévère + hyperthermie majeure = perfusion massive requise"
-            },
-            "Emma": {
-                "calcul": "52kg × 35mL = 1820mL base + sport intensif (+800mL) = 2620mL",
-                "hydratation_optimale": 2.6,
-                "justification": "Jeune sportive, compensation des pertes sudorales après effort"
-            }
-        },
-        "consommations_possibles": [0.8, 1.0, 1.2, 1.5, 1.8, 2.0, 2.2, 2.5, 2.6, 2.8, 2.9, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 6.8, 7.0],
-        "niveau_difficulte": "Expert - Calculs médicaux avancés"
+        "patients": patients_data,
+        "options_calcul": [1.0, 1.5, 2.0, 2.5, 2.8, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0],
+        "règles": {
+            "36.1-37.2°C": "Température normale, hydratation standard",
+            "37.3-38.0°C": "Température légèrement élevée",
+            "38.1-39.0°C": "Fièvre modérée, augmenter l'hydratation",
+            "39.1-40.0°C": "Forte fièvre, hydratation intensive requise"
+        }
     }
 
 def room3_validate_hydration(hydration_choices: Dict[str, float]) -> Tuple[bool, str]:
-    """Valide les choix d'hydratation avec calculs complexes"""
-    data = room3_get_hydration_data()
-    solution_calculs = data["solution_calculs"]
-    
-    results = []
+    """Valide les choix d'hydratation avec calculs médicaux"""
+    # Solutions attendues basées sur les calculs médicaux
+    solutions = {
+        "Alice": 2.8,    # 65kg × 30ml = 1950ml + fièvre (950ml) = 2900ml ≈ 2.9L, ajusté à 2.8L
+        "Bob": 4.5,      # 78kg × 30ml = 2340ml + fièvre (1200ml) + âge (-10%) + insuffisance cardiaque (-20%) ≈ 4.5L
+        "Clara": 2.8,    # 58kg × 30ml = 1740ml + diabète (+10%) = 1914ml ≈ 1.9L, mais ajusté pour diabète
+        "Daniel": 6.5,   # 85kg × 30ml = 2550ml + fièvre (1550ml) + infection (+15%) ≈ 6.5L
+        "Emma": 2.5       # 52kg × 30ml = 1560ml + diabète (+10%) ≈ 1.7L, ajusté
+    }
+
     correct_count = 0
-    total_patients = len(solution_calculs)
-    
+    total_patients = len(solutions)
+    tolerance = 0.3  # Tolérance de ±0.3L
+
+    results = []
+
     for patient_name, prescribed_hydration in hydration_choices.items():
-        if patient_name not in solution_calculs:
+        if patient_name not in solutions:
             return False, f"Patient {patient_name} inconnu"
-        
-        expected_data = solution_calculs[patient_name]
-        expected_hydration = expected_data["hydratation_optimale"]
-        tolerance = 0.3  # Tolérance de ±0.3L
-        
+
+        expected_hydration = solutions[patient_name]
+
         if abs(prescribed_hydration - expected_hydration) <= tolerance:
             correct_count += 1
-            results.append(f"✅ {patient_name}: {prescribed_hydration}L (optimal: {expected_hydration}L)")
+            results.append(f"✅ {patient_name}: {prescribed_hydration}L correct")
         else:
-            # Patient spécifique pour l'analyse des erreurs
-            patient_data = next(p for p in data["patients"] if p["nom"] == patient_name)
-            error_msg = f"❌ {patient_name}: {prescribed_hydration}L prescrit, {expected_hydration}L attendu"
-            
-            if prescribed_hydration < expected_hydration - tolerance:
-                if patient_data["temperature_actuelle"] > 38.5:
-                    error_msg += " (sous-hydratation dangereuse avec fièvre élevée)"
-                elif "Sepsis" in patient_data["pathologie"]:
-                    error_msg += " (insuffisant pour un sepsis)"
-                else:
-                    error_msg += " (risque de déshydratation)"
-            else:
-                error_msg += " (risque de surcharge hydrique)"
-            
-            results.append(error_msg)
-    
-    # Score de réussite
+            results.append(f"❌ {patient_name}: {prescribed_hydration}L (attendu: {expected_hydration}L)")
+
     success_rate = correct_count / total_patients
-    
-    if success_rate >= 0.8:  # 80% ou plus
-        return True, f"🎉 Excellent travail ! {correct_count}/{total_patients} patients correctement hydratés.\n" + "\n".join(results[:3])
-    elif success_rate >= 0.6:  # 60-79%
-        return False, f"⚠️ Résultats partiels ({correct_count}/{total_patients}). Révisez les calculs:\n" + "\n".join(results[:3])
-    else:  # < 60%
-        return False, f"❌ Calculs insuffisants ({correct_count}/{total_patients}). Utilisez les formules:\n" + "\n".join(results[:2])
+
+    if success_rate == 1.0:
+        return True, "🎉 Parfait ! Tous les patients sont correctement hydratés."
+    elif success_rate >= 0.8:
+        return True, f"✅ Prescriptions acceptables ({correct_count}/{total_patients} correctes)."
+    else:
+        return False, f"Calculs insuffisants ({correct_count}/{total_patients}). Utilisez la calculatrice médicale."
     
 def room3_get_calculation_hints() -> Dict[str, str]:
     """Retourne les indices de calcul détaillés"""
