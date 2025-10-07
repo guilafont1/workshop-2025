@@ -60,14 +60,47 @@ def room3_decrypt_secret(user_key_concat: str) -> Tuple[bool, str]:
     except Exception as e:
         return False, "Impossible de déchiffrer: " + str(e)
 
-# --------- ROOM 4: NETWORK ORDER (COOP) ---------
-# Players must activate ports in the exact order: 443 -> 22 -> 80
-EXPECTED_PORT_SEQ = ["443", "22", "80"]
-
-def room4_validate_sequence(seq: List[str]) -> Tuple[bool, str]:
-    if seq == EXPECTED_PORT_SEQ:
-        return True, "Pare-feux synchronisés !"
-    return False, "Mauvais ordre. Indice: 'HTTPS avant SSH avant HTTP'."
+# --------- ROOM 4 ---------
+def room4_validate_sequence(seq):
+    """
+    Puzzle ADN : Les joueurs doivent reconstituer une séquence génétique
+    en analysant des fragments d'ADN de patients contaminés.
+    
+    Indices cachés dans les données :
+    - Patient A (Adénine) : Fragment commence par A, poids moléculaire 135
+    - Patient T (Thymine) : Fragment commence par T, température 37°C
+    - Patient C (Cytosine) : Fragment commence par C, 3 liaisons hydrogène
+    - Patient G (Guanine) : Fragment commence par G, date 15/01
+    
+    Les indices numériques donnent l'ordre :
+    135 (1er), 37 (2ème), 3 (3ème), 15 (4ème... mais c'est un piège!)
+    
+    En fait, il faut utiliser les règles d'appariement de l'ADN :
+    A-T et C-G sont complémentaires
+    
+    La vraie séquence est basée sur le code génétique du virus :
+    ATCG = séquence complète correcte
+    """
+    correct = ["A", "T", "C", "G"]
+    
+    # Nettoyer l'input
+    cleaned = [s.strip().upper() for s in seq]
+    
+    if cleaned == correct:
+        return True, "✓ Séquence ADN validée ! Le code génétique du virus est identifié. Accès au laboratoire final autorisé."
+    
+    # Messages d'aide progressifs
+    if len(cleaned) != 4:
+        return False, "⚠️ Erreur : La séquence doit contenir exactement 4 nucléotides (A, T, C, G)."
+    
+    if set(cleaned) - {"A", "T", "C", "G"}:
+        return False, "⚠️ Erreur : Utilisez uniquement les bases azotées A, T, C et G."
+    
+    # Vérifier si c'est juste dans le mauvais ordre
+    if sorted(cleaned) == sorted(correct):
+        return False, "⚠️ Les nucléotides sont corrects mais pas dans le bon ordre. Analysez les indices numériques des patients."
+    
+    return False, "❌ Séquence incorrecte. Examinez attentivement les dossiers patients et leurs caractéristiques."
 
 # --------- ROOM 5: FINAL QUIZ WITH TIMER ---------
 FINAL_QUESTIONS = [
