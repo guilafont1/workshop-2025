@@ -157,6 +157,33 @@ legend{font-weight:600}
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Reusable button styles for consistent UX */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--accent), #38bdf8);
+  color: #04202a;
+  border-color: rgba(255,255,255,0.03);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.03);
+  color: var(--muted);
+  border-color: rgba(255,255,255,0.06);
+}
+
 /* Enhanced card hover effects */
 .card {
   transition: all 0.3s ease;

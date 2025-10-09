@@ -101,6 +101,10 @@ def lobby():
 @app.route("/room/1", methods=["GET", "POST"])
 def room1():
     state = load_state()
+    # Start the global timer when the players actually begin Room 1
+    if not state.get("started_at"):
+        state["started_at"] = int(time.time())
+        save_state(state)
     r = _check_access_for_room(state, 1)
     if r:
         return r

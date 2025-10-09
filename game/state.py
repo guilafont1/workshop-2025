@@ -25,6 +25,5 @@ def save_state(state: Dict[str, Any]) -> None:
 def reset_state(team_name: str = None) -> Dict[str, Any]:
     st = DEFAULT_STATE.copy()
     st["team_name"] = team_name
-    st["started_at"] = int(time.time())
     save_state(st)
     return st
