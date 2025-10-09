@@ -184,6 +184,96 @@ legend{font-weight:600}
   border-color: rgba(255,255,255,0.06);
 }
 
+/* Success hero / celebration styles */
+.success-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 34px;
+  text-align: center;
+  background: radial-gradient(1200px 400px at 10% 10%, rgba(110,231,183,0.06), transparent 10%), radial-gradient(800px 300px at 90% 80%, rgba(96,165,250,0.04), transparent 10%), linear-gradient(180deg,#071028 0%, #071426 100%);
+  border: 1px solid rgba(110,231,183,0.06);
+  box-shadow: 0 20px 60px rgba(2,6,23,0.75), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.success-title {
+  font-size: 40px;
+  margin: 6px 0 8px 0;
+  background: linear-gradient(90deg, #6ee7b7, #60a5fa, #c084fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 6px 30px rgba(96,165,250,0.06);
+  animation: hueShift 6s linear infinite;
+}
+
+.success-subtitle {
+  color: var(--muted);
+  font-size: 16px;
+  margin-bottom: 18px;
+}
+
+.btn-xl { padding: 14px 20px; font-size:16px; border-radius:12px }
+
+/* Confetti pieces */
+.confetti-piece{
+  position: absolute;
+  top: -10vh;
+  width: 10px; height: 18px;
+  opacity: .95;
+  transform-origin: center;
+  border-radius: 2px;
+  animation-name: confetti-fall, confetti-rotate;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes confetti-fall{
+  0% { transform: translateY(-20vh) rotate(0deg); opacity: 1 }
+  100% { transform: translateY(120vh) rotate(720deg); opacity: 0.9 }
+}
+
+@keyframes confetti-rotate{
+  0% { transform: translateY(-20vh) rotate(0deg) }
+  50% { transform: translateY(50vh) rotate(360deg) }
+  100% { transform: translateY(120vh) rotate(720deg) }
+}
+
+/* Create different speeds and delays via nth-child rules (up to 16 pieces used) */
+.confetti-piece.c1{left:4%; background:#ff6b6b; animation-duration:5.6s; animation-delay:0s}
+.confetti-piece.c2{left:10%; background:#ffd166; animation-duration:6.2s; animation-delay:0.2s}
+.confetti-piece.c3{left:18%; background:#6ee7b7; animation-duration:5.9s; animation-delay:0.1s}
+.confetti-piece.c4{left:26%; background:#60a5fa; animation-duration:6.6s; animation-delay:0.3s}
+.confetti-piece.c5{left:34%; background:#c084fc; animation-duration:5.4s; animation-delay:0.1s}
+.confetti-piece.c6{left:42%; background:#ffa5c0; animation-duration:6.0s; animation-delay:0.25s}
+.confetti-piece.c7{left:50%; background:#fff176; animation-duration:5.8s; animation-delay:0.15s}
+.confetti-piece.c8{left:58%; background:#7afcff; animation-duration:6.4s; animation-delay:0.35s}
+.confetti-piece.c9{left:66%; background:#a3e635; animation-duration:5.7s; animation-delay:0.05s}
+.confetti-piece.c10{left:74%; background:#60a5fa; animation-duration:6.1s; animation-delay:0.22s}
+.confetti-piece.c11{left:82%; background:#ff7ab6; animation-duration:5.5s; animation-delay:0.12s}
+.confetti-piece.c12{left:90%; background:#ffd166; animation-duration:6.3s; animation-delay:0.28s}
+
+/* Subtle particle glow */
+.success-hero::after{
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle at 20% 10%, rgba(110,231,183,0.04), transparent 8%), radial-gradient(circle at 80% 90%, rgba(96,165,250,0.03), transparent 8%);
+}
+
+@keyframes hueShift{
+  0%{filter:hue-rotate(0deg)}
+  50%{filter:hue-rotate(30deg)}
+  100%{filter:hue-rotate(0deg)}
+}
+
+/* Decorative arcs */
+.celebration-arc{
+  position:absolute; width:600px; height:600px; border-radius:50%; border: 2px dashed rgba(255,255,255,0.03); top:-220px; right:-220px; transform:rotate(20deg); opacity:0.12;}
+
+.celebration-arc.small{ width:420px; height:420px; top:auto; bottom:-140px; left:-180px; opacity:0.08; transform:rotate(-10deg)}
+
 /* Enhanced card hover effects */
 .card {
   transition: all 0.3s ease;
