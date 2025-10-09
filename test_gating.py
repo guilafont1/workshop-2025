@@ -16,20 +16,20 @@ def show(state, room):
                 print('room', room, '-> Redirect')
 
 import time
-base = {'started_at': None, 'progress': {'room1': False,'room2':False,'room3':False,'room4':False,'room5':False}}
+base = {'started_at': None, 'progress': {'room1': False,'room2':False,'room3':False,'room4':False,'room5':False,'room6':False}}
 print('not started:')
 show(base,1)
 
-base2 = {'started_at': int(time.time()) - (36*60), 'progress': {'room1': True,'room2':False,'room3':False,'room4':False,'room5':False}}
+base2 = {'started_at': int(time.time()) - (36*60), 'progress': {'room1': True,'room2':False,'room3':False,'room4':False,'room5':False,'room6':False}}
 print('time expired:')
 show(base2,2)
 
-base3 = {'started_at': int(time.time()), 'progress': {'room1': True,'room2':False,'room3':False,'room4':False,'room5':False}}
+base3 = {'started_at': int(time.time()), 'progress': {'room1': True,'room2':False,'room3':False,'room4':False,'room5':False,'room6':False}}
 print('after room1 complete, try room2:')
 show(base3,2)
 print('try room3 (should redirect):')
 show(base3,3)
 
-base4 = {'started_at': int(time.time()), 'progress': {'room1': True,'room2': True,'room3': True,'room4': False,'room5': False}}
+base4 = {'started_at': int(time.time()), 'progress': {'room1': True,'room2': True,'room3': True,'room4': False,'room5': False,'room6': False}}
 print('after room3 complete, try room4:')
 show(base4,4)

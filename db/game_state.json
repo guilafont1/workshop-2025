@@ -1,15 +1,15 @@
 {
-  "team_name": "De",
-  "started_at": 1760000487,
+  "team_name": "check",
+  "started_at": null,
   "progress": {
-    "room1": true,
-    "room2": true,
-    "room3": true,
-    "room4": true,
-    "room5": true,
-    "room6": true
+    "room1": false,
+    "room2": false,
+    "room3": false,
+    "room4": false,
+    "room5": false,
+    "room6": false
   },
-  "room5_start": 1760000764,
-  "roles": {},
-  "room6_start": 1760000770
+  "room5_start": null,
+  "room6_start": null,
+  "roles": {}
 }
